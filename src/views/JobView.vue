@@ -1,20 +1,42 @@
 <script setup>
-  import { RouterLink } from "vue-router";
+  import { reactive, onMounted } from "vue";
+  import axios from "axios";
+  import { useRoute, RouterLink } from "vue-router";
+  import PulseLoader from "vue-spinner/src/PulseLoader.vue";
+  import Back from "@/components/Back.vue";
+
+  const route = useRoute();
+
+  const jobId = route.params.id;
+  const state = reactive({
+    job: {},
+    isLoading: true,
+  });
+
+  onMounted(async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/jobs/${jobId}`);
+      state.job = response.data;
+    } catch (error) {
+      console.error("Error fetching job...");
+    } finally {
+      state.isLoading = false;
+    }
+  });
 </script>
 
 <template>
-  <!-- Go Back -->
-  <section>
-    <div class="container m-auto py-6 px-6">
-      <RouterLink
-        to="/jobs"
-        class="text-green-500 hover:text-green-600 flex items-center">
-        <i class="pi pi-arrow-left mr-2"></i> Back to Job Listings
-      </RouterLink>
-    </div>
-  </section>
+  <Back link="/jobs" />
 
-  <section class="bg-green-50">
+  <div
+    v-if="state.isLoading"
+    class="text-center text-gray-500 py-6">
+    <PulseLoader />
+  </div>
+
+  <section
+    v-if="!state.isLoading"
+    class="bg-green-50">
     <div class="container m-auto py-10 px-6">
       <div class="grid grid-cols-1 md:grid-cols-70/30 w-full gap-6">
         <main>
